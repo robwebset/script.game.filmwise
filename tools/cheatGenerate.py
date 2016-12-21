@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import hashlib
-import traceback
 import urllib
 import urllib2
 from BeautifulSoup import BeautifulSoup
