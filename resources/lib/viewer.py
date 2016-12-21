@@ -22,6 +22,7 @@ class FilmWiseViewer(xbmcgui.WindowXMLDialog):
     CHECK_BUTTON = 301
     CLOSE_BUTTON = 302
     SOLUTION_BUTTON = 303
+    CHEAT_BUTTON = 304
     IMAGE_IDS = [501, 502, 503, 504, 505, 506, 507, 508]
     EDIT_BOX_IDS = [601, 602, 603, 604, 605, 606, 607, 608]
     MARK_IDS = [701, 702, 703, 704, 705, 706, 707, 708]
@@ -59,8 +60,13 @@ class FilmWiseViewer(xbmcgui.WindowXMLDialog):
 
         # Check if we should show the solution button
         if self.solution in [None, ""]:
+            log("onInit: Disabling Solution button")
             solutionControl = self.getControl(FilmWiseViewer.SOLUTION_BUTTON)
             solutionControl.setVisible(False)
+        else:
+            log("onInit: Disabling Cheat button")
+            cheatControl = self.getControl(FilmWiseViewer.CHEAT_BUTTON)
+            cheatControl.setVisible(False)
 
         # Make sure all the flags for correct and incorrect answers are cleared
         for i in range(0, 8):
@@ -108,6 +114,9 @@ class FilmWiseViewer(xbmcgui.WindowXMLDialog):
         elif controlID == FilmWiseViewer.SOLUTION_BUTTON:
             log("FilmWiseViewer: Solution click action received: %d" % controlID)
             self.showSolution()
+        elif controlID == FilmWiseViewer.CHEAT_BUTTON:
+            log("FilmWiseViewer: Cheat click action received: %d" % controlID)
+            self.showCheats()
         elif controlID == FilmWiseViewer.CHECK_BUTTON:
             log("FilmWiseViewer: Check click action received: %d" % controlID)
             self.isCheckFlag = True
@@ -136,24 +145,25 @@ class FilmWiseViewer(xbmcgui.WindowXMLDialog):
         solutionDetails = filmWise.getSolution(self.solution)
         del filmWise
 
-        if len(solutionDetails) > 0:
-            # Set all the images for the quiz
-            for i in range(0, 8):
-                img = self.questions[i].get('image', None)
-                if img is None:
-                    continue
-                else:
-                    solutionImg = img.replace('.jpg', 'a.jpg')
-                    log("showSolution: Solution Img = %s" % solutionImg)
-                editControl = self.getControl(FilmWiseViewer.EDIT_BOX_IDS[i])
-                answer = solutionDetails.get(solutionImg, '')
-                log("showSolution: Answer Is %s" % answer)
-                editControl.setText(answer)
+        if solutionDetails not in [None, ""]:
+            if len(solutionDetails) > 0:
+                # Set all the images for the quiz
+                for i in range(0, 8):
+                    img = self.questions[i].get('image', None)
+                    if img is None:
+                        continue
+                    else:
+                        solutionImg = img.replace('.jpg', 'a.jpg')
+                        log("showSolution: Solution Img = %s" % solutionImg)
+                    editControl = self.getControl(FilmWiseViewer.EDIT_BOX_IDS[i])
+                    answer = solutionDetails.get(solutionImg, '')
+                    log("showSolution: Answer Is %s" % answer)
+                    editControl.setText(answer)
 
-                # Also need to replace the images
-                if answer not in [None, ""]:
-                    imageControl = self.getControl(FilmWiseViewer.IMAGE_IDS[i])
-                    imageControl.setImage(solutionImg)
+                    # Also need to replace the images
+                    if answer not in [None, ""]:
+                        imageControl = self.getControl(FilmWiseViewer.IMAGE_IDS[i])
+                        imageControl.setImage(solutionImg)
 
         # Disable the buttons, the only option when you have seen the solution is close
         checkControl = self.getControl(FilmWiseViewer.CHECK_BUTTON)
@@ -208,6 +218,28 @@ class FilmWiseViewer(xbmcgui.WindowXMLDialog):
 
         # Now set the score total
         self._setScore(numCorrectAnswers, numQuestions)
+
+        xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+    def showCheats(self):
+        xbmc.executebuiltin("ActivateWindow(busydialog)")
+
+        # Get the questions that do not already have a correct answer
+        numQuestions = len(self.questions)
+        if numQuestions > 8:
+            numQuestions = 8
+
+        for i in range(0, numQuestions):
+            editControl = self.getControl(FilmWiseViewer.EDIT_BOX_IDS[i])
+            enteredAnswer = editControl.getText()
+
+            if enteredAnswer in [None, ""]:
+                # Get the location of the image
+                filmWise = FilmWiseCore()
+                cheatAnswer = filmWise.getCheatAnswer(self.questions[i]['image'])
+                if cheatAnswer not in [None, ""]:
+                    editControl = self.getControl(FilmWiseViewer.EDIT_BOX_IDS[i])
+                    editControl.setText(cheatAnswer)
 
         xbmc.executebuiltin("Dialog.Close(busydialog)")
 

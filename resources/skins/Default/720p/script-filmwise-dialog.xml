@@ -363,7 +363,7 @@
             <texturefocus border="5">button-focus.png</texturefocus>
 			<textcolor>ffffffff</textcolor>		<!-- white -->
             <onright>302</onright>
-            <onleft>303</onleft>
+            <onleft>304</onleft>
             <onup>203</onup>
             <ondown>202</ondown>
         </control>
@@ -394,10 +394,26 @@
             <texturenofocus border="5">button-nofocus.png</texturenofocus>
             <texturefocus border="5">button-focus.png</texturefocus>
 			<textcolor>ffffffff</textcolor>		<!-- white -->
-            <onright>301</onright>
+            <onright>304</onright>
             <onleft>302</onleft>
             <onup>203</onup>
             <ondown>601</ondown>
+        </control>
+        <control type="button" id="304">
+            <description>Cheat Button</description>
+            <posx>970</posx>
+            <posy>65r</posy>
+            <width>250</width>
+            <height>40</height>
+            <align>center</align>
+            <label>$ADDON[script.game.filmwise 32015]</label>
+            <texturenofocus border="5">button-nofocus.png</texturenofocus>
+            <texturefocus border="5">button-focus.png</texturefocus>
+			<textcolor>ffffffff</textcolor>		<!-- white -->
+            <onright>301</onright>
+            <onleft>303</onleft>
+            <onup>203</onup>
+            <ondown>202</ondown>
         </control>
     </controls>
 </window>

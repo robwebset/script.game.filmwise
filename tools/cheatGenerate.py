@@ -4,13 +4,9 @@ import hashlib
 import traceback
 import urllib
 import urllib2
-import ConfigParser
 from BeautifulSoup import BeautifulSoup
-import xbmc
 
-# Import the common settings
-from settings import log
-from settings import Settings
+import ConfigParser
 
 
 #########################
@@ -65,14 +61,12 @@ class FilmWiseCore():
                                 quizNum = int(lastElement.split(':')[0])
                             except:
                                 quizNum = -1
-                            log("getQuizList: Quiz number is %s" % quizNum)
 
                 # If we found a quiz add it to the list
                 if questionLink is not None:
                     questionLink = self._fullUrl(questionLink)
                     answersLink = self._fullUrl(answersLink)
                     quizList.append({"number": quizNum, "name": title, "date": date, "link": questionLink, "solution": answersLink})
-                    log("getQuizList: %d: %s %s - %s (%s)" % (quizNum, date, title, questionLink, answersLink))
 
         return quizList
 
@@ -89,12 +83,10 @@ class FilmWiseCore():
         formInput = soup.find('input', {"name": "form"})
         if formInput is not None:
             quizDetails['form'] = formInput['value']
-            log("getQuizData: form is %s" % quizDetails['form'])
 
         redirectInput = soup.find('input', {"name": "redirect"})
         if redirectInput is not None:
             quizDetails['redirect'] = redirectInput['value']
-            log("getQuizData: redirect is %s" % quizDetails['redirect'])
 
         table = soup.find('table', {"width": "710"})
 
@@ -111,7 +103,6 @@ class FilmWiseCore():
                             if inputName is not None:
                                 tag = inputName['name']
                                 quizDetails['questions'].append({"name": tag, "image": image})
-                                log("getQuizData: Question %s is %s" % (tag, image))
 
         return quizDetails
 
@@ -139,9 +130,6 @@ class FilmWiseCore():
                             answer = answerElem.getText()
                             solutionDetails[image] = answer
 
-        for img in solutionDetails:
-            log("getSolution: %s (%s)" % (solutionDetails[img], img))
-
         return solutionDetails
 
     def checkAnswer(self, form, redirect, answers):
@@ -159,55 +147,18 @@ class FilmWiseCore():
             response = urllib2.urlopen(req, data)
             # The URL will tell us how many we got correct
             forwardUrl = response.geturl()
-            log("checkAnswers: url forwarded to %s" % forwardUrl)
 
             # Extract the number of correct answers
             scoreIdx = forwardUrl.find("score=")
             if scoreIdx > 0:
                 scoreIdx = scoreIdx + 6
                 correctAnswers = int(forwardUrl[scoreIdx:scoreIdx + 1])
-                log("checkAnswers: Number of correct answers is %d" % correctAnswers)
         except:
             pass
 
         # TODO: if this is not the latest quiz, then the returned document will
         # actually contain the results, we should read the answers from that
         return correctAnswers
-
-    def getCheatAnswer(self, imageUrl):
-        # First try and get the hash of the image
-        imgHash = self._getHashForImage(imageUrl)
-
-        if imgHash in [None, ""]:
-            return None
-
-        # Now load the cheat values and see if the image has appears before
-        cheatsFileLocation = Settings.getCheatLocation()
-        if cheatsFileLocation in [None, ""]:
-            log("getCheatAnswer: Failed to load cheats file")
-            return None
-
-        log("getCheatAnswer: File location is %s" % cheatsFileLocation)
-
-        cheatAnswer = None
-
-        # Now try and load the cheats file and look for the answer
-        try:
-            cheatsFile = ConfigParser.ConfigParser()
-            cheatsFile.read(cheatsFileLocation)
-
-            # Now perform a lookup for the image hash
-            if cheatsFile.has_option('Cheats', imgHash):
-                cheatAnswer = cheatsFile.get('Cheats', imgHash)
-
-            if cheatAnswer not in [None, ""]:
-                log("getCheatAnswer: found answer for %s (%s) of %s" % (imageUrl, imgHash, cheatAnswer))
-            else:
-                log("getCheatAnswer: cheat answer not available for %s (%s)" % (imageUrl, imgHash))
-        except:
-            log("getCheatAnswer: Failed to load answer for %s (%s)" % (imageUrl, imgHash))
-
-        return cheatAnswer
 
     def _fullUrl(self, partUrl):
         url = partUrl
@@ -230,49 +181,116 @@ class FilmWiseCore():
                 response.close()
             except:
                 pass
-                log("FilmWiseCore: Failed to close connection for %s" % url)
         except:
-            log("FilmWiseCore: ERROR opening page %s" % url, xbmc.LOGERROR)
-            log("FilmWiseCore: %s" % traceback.format_exc(), xbmc.LOGERROR)
             return None
         return doc
 
-    def _getHashForImage(self, imageUrl, tempFileName=None):
-        # Get the location of the temporary directory
-        if tempFileName in [None, ""]:
-            tempFileName = "%s/filmwiseImage.jpg" % Settings.getTempLocation()
-
-        # Make sure there is not an old image left behind
+    def getHashForImage(self, imageUrl, tempFileName='filmwiseImage.jpg'):
+        # First save the image to a temporary file
         if os.path.exists(tempFileName):
             os.remove(tempFileName)
 
-        # First save the image to a temporary file
+        # Download the file
         try:
             fp, h = urllib.urlretrieve(imageUrl, tempFileName)
         except:
-            log("FilmWiseCore: Failed to get file %s" % imageUrl)
+            print "Error: Failed to get file %s" % imageUrl
             return None
 
-        hashValue = None
+        # Now get the hash of the image file
+        hash_md5 = hashlib.md5()
 
-        # Make sure the image was downloaded OK
+        blocksize = 64 * 1024
+        try:
+            with open(tempFileName, 'rb') as fp:
+                while True:
+                    data = fp.read(blocksize)
+                    if not data:
+                        break
+                    hash_md5.update(data)
+        except:
+            print "Error: Failed to create hash for %s" % tempFileName
+            return None
+
         if os.path.exists(tempFileName):
-            # Now get the hash of the image file
-            hash_md5 = hashlib.md5()
-
-            blocksize = 64 * 1024
-            try:
-                with open(tempFileName, 'rb') as fp:
-                    while True:
-                        data = fp.read(blocksize)
-                        if not data:
-                            break
-                        hash_md5.update(data)
-
-                hashValue = hash_md5.hexdigest()
-            except:
-                log("FilmWiseCore: Failed to create hash for %s" % imageUrl)
-
             os.remove(tempFileName)
 
-        return hashValue
+        return hash_md5.hexdigest()
+
+
+#########################
+# Main
+#########################
+if __name__ == '__main__':
+    filmWise = FilmWiseCore()
+    # get the list of available quizzes
+    quizList = filmWise.getQuizList()
+
+    print "Available Number of Quizzes is %d" % len(quizList)
+
+    # Read the existing config file
+    cheatsFile = ConfigParser.ConfigParser()
+    cheatsFile.read('cheats.ini')
+    lastQuiz = cheatsFile.getint('History', 'latestQuiz')
+
+    if lastQuiz in [None, ""]:
+        lastQuiz = 700
+
+    print "Last Quiz in cheats file = %d" % lastQuiz
+
+    # Make sure the sections exist
+    if not cheatsFile.has_section('History'):
+        cheatsFile.add_section('History')
+    if not cheatsFile.has_section('Cheats'):
+        cheatsFile.add_section('Cheats')
+
+    cheatsFile.set('History', 'earliestQuiz', 701)
+
+    highestQuizAdded = lastQuiz
+
+    for quiz in quizList:
+        # Only check the quizes from the point we need to get data for
+        if quiz['number'] <= lastQuiz:
+            continue
+
+        print "Selected quiz is %s" % quiz['name']
+        # Make sure there is a solution available
+        if quiz['solution'] in [None, ""]:
+            continue
+
+        print "Solutions Available"
+        # Now get the details of the questions for this quiz number
+        quizQuestions = filmWise.getQuizData(quiz['link'])
+        quizSolution = filmWise.getSolution(quiz['solution'])
+
+        if (quizQuestions not in [None, ""]) and (quizSolution not in [None, ""]):
+            questions = quizQuestions['questions']
+            # Generate a map of the original Image URL and the name of the movie
+            numQuestions = len(questions)
+            if numQuestions > 8:
+                numQuestions = 8
+                if len(quizSolution) < numQuestions:
+                    numQuestions = len(quizSolution)
+
+            answerMap = {}
+            for i in range(0, numQuestions):
+                img = questions[i]['image']
+                if img is None:
+                    continue
+                solutionImg = img.replace('.jpg', 'a.jpg')
+                answer = quizSolution.get(solutionImg, '')
+                if answer not in [None, ""]:
+                    imgHash = filmWise.getHashForImage(img)
+                    if imgHash not in [None, ""]:
+                        print "showSolution: Answer is - %s (%s)" % (answer, imgHash)
+                        cheatsFile.set('Cheats', imgHash, answer)
+
+                        if quiz['number'] > highestQuizAdded:
+                            highestQuizAdded = quiz['number']
+
+    cheatsFile.set('History', 'latestQuiz', highestQuizAdded)
+
+    with open('cheats.ini', 'w') as configfile:
+        cheatsFile.write(configfile)
+
+    del filmWise
