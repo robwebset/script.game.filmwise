@@ -2,9 +2,11 @@
 import os
 import xbmc
 import xbmcaddon
+import xbmcvfs
 
 ADDON = xbmcaddon.Addon(id='script.game.filmwise')
 ADDON_ID = ADDON.getAddonInfo('id')
+CWD = ADDON.getAddonInfo('path').decode("utf-8")
 
 
 # Common logging module
@@ -35,6 +37,25 @@ def os_path_join(dir, file):
     return os.path.join(dir, file)
 
 
+# Checks if a directory exists (Do not use for files)
+def dir_exists(dirpath):
+    # There is an issue with password protected smb shares, in that they seem to
+    # always return false for a directory exists call, so if we have a smb with
+    # a password and user name, then we return true
+    if '@' in dirpath:
+        return True
+
+    directoryPath = dirpath
+    # The xbmcvfs exists interface require that directories end in a slash
+    # It used to be OK not to have the slash in Gotham, but it is now required
+    if (not directoryPath.endswith("/")) and (not directoryPath.endswith("\\")):
+        dirSep = "/"
+        if "\\" in directoryPath:
+            dirSep = "\\"
+        directoryPath = "%s%s" % (directoryPath, dirSep)
+    return xbmcvfs.exists(directoryPath)
+
+
 ##############################
 # Stores Various Settings
 ##############################
@@ -59,3 +80,25 @@ class Settings():
     @staticmethod
     def isAutoOpenNewQuiz():
         return ADDON.getSetting("autoOpenNewQuiz") == 'true'
+
+    @staticmethod
+    def getTempLocation():
+        tmpdestination = xbmc.translatePath('special://profile/addon_data/%s/temp' % ADDON_ID).decode("utf-8")
+
+        # Make sure the directory exists
+        if not dir_exists(xbmc.translatePath('special://profile/addon_data/%s' % ADDON_ID).decode("utf-8")):
+            xbmcvfs.mkdir(xbmc.translatePath('special://profile/addon_data/%s' % ADDON_ID).decode("utf-8"))
+        if not dir_exists(tmpdestination):
+            xbmcvfs.mkdir(tmpdestination)
+        return tmpdestination
+
+    @staticmethod
+    def getCheatLocation():
+        res_dir = xbmc.translatePath(os.path.join(CWD, 'resources').encode("utf-8")).decode("utf-8")
+        cheatsFile = os.path.join(res_dir, 'cheats.ini')
+
+        # Make sure the file exists
+        if not os.path.exists(cheatsFile):
+            cheatsFile = None
+
+        return cheatsFile

@@ -79,3 +79,7 @@ msgstr ""
 msgctxt "#32014"
 msgid "Automatically Open New Quiz"
 msgstr ""
+
+msgctxt "#32015"
+msgid "Try Cheating"
+msgstr ""

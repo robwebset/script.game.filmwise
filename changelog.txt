@@ -1,3 +1,6 @@
+v100.2.1 (2016-12-21)
+- Add option to try and cheat
+
 v100.2.0 (2016-12-15)
 - Update for support of URepo
 

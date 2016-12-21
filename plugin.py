@@ -48,7 +48,10 @@ class MenuNavigator():
 
             li = xbmcgui.ListItem(displaytitle, iconImage=ICON)
             li.setProperty("Fanart_Image", FANART)
-            url = self._build_url({'mode': 'quiz', 'number': quiz['number'], 'name': quiz['name'], 'link': quiz['link'], 'solution': quiz['solution']})
+            if quiz['solution'] in [None, ""]:
+                url = self._build_url({'mode': 'quiz', 'number': quiz['number'], 'name': quiz['name'], 'link': quiz['link']})
+            else:
+                url = self._build_url({'mode': 'quiz', 'number': quiz['number'], 'name': quiz['name'], 'link': quiz['link'], 'solution': quiz['solution']})
             xbmcplugin.addDirectoryItem(handle=self.addon_handle, url=url, listitem=li, isFolder=False)
 
         del filmWise
