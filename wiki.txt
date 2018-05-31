@@ -1,0 +1,54 @@
+[[https://github.com/robwebset/script.game.filmwise/raw/master/icon.png]]
+
+== Introduction ==
+You can install this addon from: [https://www.urepo.org URepo Repository]
+<br />
+<br />
+FilmWise is an addon that gives you access and reminders for the [http://www.filmwise.com/ FilmWise Invisibles Quiz].
+
+This is a great weekly quiz where you get 8 images where the actors have been removed and you have to guess the movie!
+
+After installing the addon you can start the quiz by either going to the Programs section or Video Add-on section.
+<br />
+== The Quiz ==
+When selecting a quiz either via the Programs or Video Addon section the following window will be displayed:
+<br />
+<center>[[https://github.com/robwebset/repository.robwebset/raw/master/script.game.filmwise/images/FilmWise-Display1.JPG|700px]]</center>
+<br />
+The answers can be entered under each picture, and by clicking on "Check Answers" it will highlight the correct ones. For weeks that have solutions, a "Show Solution" button will be displayed, clicking on that will show the answers for that week, filling in the people in the picture at the same time.
+<br />
+[[https://github.com/robwebset/repository.robwebset/raw/master/script.game.filmwise/images/FilmWise-Display2.JPG|700px]]
+<br />
+== Notifications ==
+There are two different ways to be notified of a new quiz (configurable in the settings)
+* A notification popup when Kodi starts
+* Automatically opening the quiz display screen when Kodi starts
+<br />
+== Settings ==
+This section details all the settings options for Suitability
+=== FilmWise ===
+{| border="0"
+|- valign=top
+|
+:'''Remember User Answers'''
+::Stores the answers previously entered
+:'''Notify If New Quiz Available'''
+::Notify on startup if a new quiz is available
+:'''- Automatically Open New Quiz'''
+::Automatically open the new quiz on startup
+:<u>'''''Operations'''''</u>
+::
+:'''Clear Saved Answers'''
+::Removes all the saved answers
+:<u>'''''Debugging'''''</u>
+::
+:'''Enable Debug logging'''
+::Enables FilmWise debug logging into the Kodi log file
+|}
+<br />
+== Debugging ==
+If reporting a problem, please also provide a debug log. To do this you need to enable BOTH:
+* Kodi logging from the main setting menu
+* FilmWise debug from the FilmWise addon settings menu
+Please do not paste the log into the forum thread, just link to it.
+<br />
