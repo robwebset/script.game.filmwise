@@ -1,9 +1,6 @@
 [[https://github.com/robwebset/script.game.filmwise/raw/master/icon.png]]
 
 == Introduction ==
-You can install this addon from: [https://www.urepo.org URepo Repository]
-<br />
-<br />
 FilmWise is an addon that gives you access and reminders for the [http://www.filmwise.com/ FilmWise Invisibles Quiz].
 
 This is a great weekly quiz where you get 8 images where the actors have been removed and you have to guess the movie!
